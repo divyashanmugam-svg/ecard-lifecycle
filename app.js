@@ -57,12 +57,12 @@ function renderMsg(m) {
   return `<div class="mlabel"><span>${esc(lab)}</span>${proposed}</div>${body}`;
 }
 const POINTS = {
-  p1: ["Policy is issued the moment it's bought.", "Customer gets the policy PDF on WhatsApp and email.", "Nothing about the e-card yet."],
-  q1: ["Any e-card action, any number of times.", "The app works normally.", "We send nothing."],
-  p2: ["Pre-trip starts 15 days before the trip.", "Still no messages.", "Actions are still ignored."],
-  p3: ["3 days before the trip.", "First time we talk about the medical e-card. Text only, no card image.", "Buttons: Download e-card, View policy PDF."],
-  p5: ["Any e-card action from T-3 to trip start.", "Download: toast and one WhatsApp confirmation.", "No check-in, because cover hasn't started."],
-  i1: ["Trip start day: two WhatsApp messages.", "1. The e-card, with the card image. Variants for 1 traveller, several, and USA / Canada.", "2. The policy document, as proof of insurance for visa and entry checks."],
+  p1: ["Policy is issued the moment it's bought.","WhatsApp: the e-card with its card image, then the policy document.","Email carries both as attachments."],
+  q1: ["Any e-card action, any number of times.","The app works normally.","We send nothing more."],
+  p2: ["Pre-trip starts 15 days before the trip.","Still no messages: they already have both documents.","Actions are ignored."],
+  p3: ["1 day before the trip.","Same two WhatsApp messages again: e-card with image, then the policy document.","Plus a push. Variants for 1 traveller, several, and USA / Canada."],
+  p5: ["Any e-card action from T-1 to trip start.","Download: toast and one WhatsApp confirmation.","No check-in, because cover hasn't started."],
+  i1: ["Trip start day.","Nothing new goes out: T-1 already covered it.","Check-ins begin when the customer taps the e-card."],
   i2: ["Any e-card action during the trip.", "We send the WhatsApp check-in straight away.", "Wording follows the action: view, download, share, call."],
   i7: ["Customer taps 👍.", "We say one line back.", "Nothing more."],
   i8: ["Customer taps 👎.", "We show the medical help options. Request a callback opens the form from a link.", "Also: cashless hospitals near me, view e-card, talk to a doctor online."],
