@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head><meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medical e-card lifecycle</title>
+<style>
+:root{
+  --primary:#6841E6; --primary-subtle:#F3F3FF; --primary-muted:#E1E0FE;
+  --bg:#FAFAFC; --surface:#fff; --text:#1C1B22; --text-2:#5B6475; --text-3:#8A91A0;
+  --border:#E4E5EB; --border-subtle:#EFEFF3;
+  --green:#0E8A5F; --green-soft:#E8F7F0; --red:#C62828; --red-soft:#FDECEC; --amber-soft:#FFF6E0;
+  --wa-bg:#EFE7DD; --wa-in:#fff; --wa-out:#D9FDD3;
+  --radius:20px;
+  --shadow:0 1px 2px rgba(20,20,40,.05),0 4px 16px rgba(20,20,40,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#16151B;--surface:#1F1E26;--text:#F2F2F6;--text-2:#B4B8C4;--text-3:#8A91A0;--border:#33323D;--border-subtle:#2A2933;--primary:#9B7DFF;--primary-subtle:#2A2545;--primary-muted:#3B3363;--green-soft:#12332A;--red-soft:#3A1E20;--amber-soft:#3A3220;--shadow:none}
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Euclid Circular B",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+header{padding:28px 0 8px}
+h1{font-size:28px;line-height:1.2;margin:0 0 6px;letter-spacing:-.01em}
+.lead{color:var(--text-2);margin:0;max-width:760px}
+.topbar{display:none;;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:20px 0 14px}
+.tabs{display:flex;gap:4px;background:var(--border-subtle);padding:4px;border-radius:999px}
+.tab{border:0;background:transparent;padding:8px 16px;border-radius:999px;font-weight:600;color:var(--text-2)}
+.tab[aria-selected=true]{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chips .lbl{font-size:12px;color:var(--text-3);margin-right:2px}
+.chip{border:1px solid var(--border);background:var(--surface);padding:5px 12px;border-radius:999px;font-size:13px;display:flex;gap:6px;align-items:center}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.chip[aria-pressed=true]{border-color:var(--primary);background:var(--primary-subtle)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+/* timeline */
+.tl-shell{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.tl-scroll{overflow-x:auto;padding:16px 16px 20px;scroll-snap-type:x proximity}
+.tl-grid{display:grid;grid-auto-rows:auto;column-gap:12px;row-gap:10px;min-width:max-content}
+.phase-head{border-radius:12px;padding:8px 12px;font-weight:700;display:flex;flex-direction:column;position:sticky;left:0}
+.phase-head small{font-weight:400;font-size:12px;opacity:.85}
+.rowlabel{grid-column:1;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);align-self:center;padding-right:8px;width:92px;position:sticky;left:0;background:var(--surface);z-index:2}
+.node{width:168px;text-align:left;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;scroll-snap-align:center;transition:transform .15s,border-color .15s,box-shadow .15s}
+.node:hover{transform:translateY(-2px)}
+.node .when{font-size:11px;color:var(--text-3);font-weight:600}
+.node .ttl{font-weight:700;font-size:14px;line-height:1.25}
+.node .dots{display:flex;gap:4px;margin-top:2px}
+.node .dots i{width:8px;height:8px;border-radius:50%}
+.node[aria-current=true]{border-color:var(--nc);box-shadow:0 0 0 3px color-mix(in srgb,var(--nc) 22%,transparent)}
+.node.dim{opacity:.28}
+.node.tap{border-style:dashed}
+.node .ico{font-size:11px;color:var(--nc);font-weight:700}
+.tl-hint{padding:10px 16px;border-top:1px solid var(--border-subtle);font-size:13px;color:var(--text-2);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+kbd{background:var(--border-subtle);border-radius:5px;padding:1px 6px;font-size:12px}
+
+/* windows */
+.win{margin-bottom:16px}
+.win h2{margin:0 0 4px;font-size:17px}
+.win .dates{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 16px}
+.win label{font-size:12px;color:var(--text-3);display:flex;flex-direction:column;gap:3px;font-weight:600}
+.win input{font:inherit;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text)}
+.bar{display:grid;gap:4px;margin-bottom:6px}
+.seg{border-radius:12px;padding:10px 12px;min-width:0}
+.seg b{display:block;font-size:13px}.seg span{display:block;font-size:12px;opacity:.9}
+.seg .dd{font-weight:700;font-size:12px;margin-top:4px}
+.wnote{font-size:13px;color:var(--text-2);margin-top:8px}
+@media(max-width:700px){.bar{grid-template-columns:1fr!important}}
+
+/* detail */
+.one{display:grid;grid-template-columns:minmax(0,4fr) minmax(0,6fr);gap:28px;margin:20px 0 48px}
+@media(max-width:900px){.one{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px}
+.d-title{font-size:22px;line-height:1.25;margin:10px 0 4px;letter-spacing:-.01em}
+.d-when{color:var(--text-2);font-size:14px;margin-bottom:14px}
+.sec{margin-top:16px}
+.sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin:0 0 6px}
+.sec p{margin:0}
+.sec ul{margin:0;padding-left:18px}
+.sec li{margin:3px 0}
+.tag{display:inline-block;background:var(--primary-subtle);color:var(--primary);font:12px ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 8px;border-radius:6px;margin:2px 4px 2px 0}
+.navbtns{display:flex;gap:8px;margin-top:20px}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+
+.msg-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mt{border:1px solid var(--border);background:var(--surface);padding:6px 12px;border-radius:999px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.mt i{width:8px;height:8px;border-radius:50%}
+.mt[aria-selected=true]{background:var(--text);color:var(--bg);border-color:var(--text)}
+.mlabel{font-size:12px;color:var(--text-3);margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.proposed{background:var(--amber-soft);color:#8A5A00;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+@media(prefers-color-scheme:dark){.proposed{color:#F0C060}}
+
+/* phone mockups */
+.phone{max-width:380px;margin:0 auto;border-radius:28px;border:1px solid var(--border);overflow:hidden;background:var(--wa-bg);box-shadow:var(--shadow)}
+.wa-head{background:#075E54;color:#fff;padding:10px 14px;display:flex;gap:10px;align-items:center}
+.wa-av{width:32px;height:32px;border-radius:50%;background:#fff;color:var(--primary);display:grid;place-items:center;font-weight:800;font-size:12px}
+.wa-head b{display:block;font-size:14px;line-height:1.2}.wa-head small{font-size:11px;opacity:.8}
+.wa-body{padding:14px 12px;display:flex;flex-direction:column;gap:8px;min-height:120px;background:var(--wa-bg)}
+.bub{max-width:88%;padding:8px 10px;border-radius:10px;font-size:14px;line-height:1.4;color:#111;white-space:pre-wrap;box-shadow:0 1px 1px rgba(0,0,0,.08)}
+.bub.bot{background:var(--wa-in);align-self:flex-start;border-top-left-radius:2px}
+.bub.user{background:var(--wa-out);align-self:flex-end;border-top-right-radius:2px}
+.bub b{font-weight:700}
+.doc{display:flex;gap:8px;align-items:center;background:#F0F2F5;border-radius:8px;padding:8px;margin-bottom:6px;font-size:12px;word-break:break-all}
+.doc span{background:#E53935;color:#fff;font-weight:800;font-size:10px;padding:6px 5px;border-radius:4px}
+.ecard{background:#E1E0FE;border-radius:10px;padding:8px;margin-bottom:8px;position:relative;color:#1C1B22;font-size:11px;white-space:normal}
+.ecard>*{position:relative}.ecard{background:linear-gradient(#E1E0FE,#E1E0FE)}
+.ecard .logos{display:flex;gap:10px;align-items:center;margin-bottom:4px;background:#fff;padding:8px 8px 0;border-radius:8px 8px 0 0}
+.ecard .logos b{color:#6841E6;font-size:13px}.ecard .logos i{color:#C62828;font-weight:700;font-size:11px}
+.ecard .nm{background:#fff;font-weight:700;font-size:14px;padding:2px 8px 6px}
+.ecard .r{display:flex;justify-content:space-between;gap:8px;background:#fff;padding:5px 8px;border-top:1px solid #eee}
+.ecard .r span{color:#777}.ecard .r b{font-weight:600;text-align:right}
+.ecard .nums{background:#fff;border-radius:0 0 8px 8px;padding:6px 8px 8px;border-top:1px solid #eee}
+.ecard .nums small{color:#777;display:block;font-size:10px}.ecard .nums b{font-size:13px}.ecard .nums div{margin-top:3px}
+.ecard .more{position:absolute;top:-8px;right:20px;background:#0E8A5F;color:#fff;font-size:10px;padding:1px 8px;border-radius:999px;z-index:1}
+.qr{display:flex;flex-direction:column;gap:4px;margin-top:6px;border-top:1px solid #eee;padding-top:6px}
+.qr div{text-align:center;color:#0A7CFF;font-weight:600;font-size:14px;padding:5px;border-radius:6px;background:#F7FAFF}
+.push{max-width:380px;margin:0 auto;background:linear-gradient(160deg,#52467a,#2c2742);border-radius:28px;padding:28px 14px 24px}
+.push .clock{color:#fff;text-align:center;font-size:44px;font-weight:300;margin-bottom:18px}
+.notif{background:rgba(255,255,255,.92);border-radius:16px;padding:10px 12px;display:flex;gap:10px;color:#111}
+.notif .app{width:36px;height:36px;border-radius:9px;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;font-size:11px;flex:none}
+.notif small{color:#666;font-size:11px;display:flex;justify-content:space-between}
+.notif b{display:block;font-size:14px;line-height:1.25}.notif p{margin:2px 0 0;font-size:13px;line-height:1.35}
+.push .link{color:#E1E0FE;font-size:12px;text-align:center;margin-top:12px}
+.email{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;color:#111}
+.email .eh{padding:12px 14px;background:#F6F6F9;border-bottom:1px solid #E4E5EB;font-size:13px}
+.email .eh div{margin:2px 0}.email .eh span{color:#666;display:inline-block;width:56px}
+.email .eb{padding:14px;white-space:pre-wrap;font-size:14px;line-height:1.55}
+.inapp{max-width:380px;margin:0 auto;border-radius:28px;border:1px solid var(--border);background:var(--surface);padding:28px 16px;box-shadow:var(--shadow)}
+.sheet{background:var(--primary-subtle);border-radius:20px;padding:16px}
+.sheet b{display:block;font-size:16px;margin-bottom:4px}.sheet p{margin:0;font-size:14px;color:var(--text-2)}
+.sheet .l{margin-top:12px;font-size:12px;color:var(--primary);font-weight:700}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);margin-bottom:48px}
+table{border-collapse:collapse;width:100%;min-width:1000px;font-size:14px}
+th,td{text-align:left;vertical-align:top;padding:12px 14px;border-bottom:1px solid var(--border-subtle)}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);background:var(--bg);position:sticky;top:0}
+td.ev{font-weight:700;width:160px}
+td.ev small{display:block;font:11px ui-monospace,Menlo,monospace;color:var(--text-3);font-weight:400}
+.cell b{display:block;font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+.cell b:first-child{margin-top:0}
+.rules{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:24px}
+.rules .card{padding:16px}.rules h4{margin:0 0 4px;font-size:15px}.rules p{margin:0;color:var(--text-2);font-size:14px}
+h2{font-size:20px;margin:28px 0 12px}
+[hidden]{display:none!important}
+footer{padding:0 0 40px;color:var(--text-3);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Medical e-card: customer lifecycle</h1>
+  <p class="lead">Tap any step to see what happens and the message the customer gets.</p>
+</header>
+
+<section id="v-timeline">
+  <div class="tl-shell">
+    <div class="tl-scroll" id="tlScroll"><div class="tl-grid" id="tlGrid"></div></div>
+    <div class="tl-hint"><span>Solid cards are sent on a schedule. Dashed cards fire when the customer taps something.</span><span><kbd>←</kbd> <kbd>→</kbd> to step through</span></div>
+  </div>
+  <div class="card one" id="detail"></div>
+</section>
+</div>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
